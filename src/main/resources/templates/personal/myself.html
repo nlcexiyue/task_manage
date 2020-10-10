@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>个人中心</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!--/表示static目录-->
+    <link rel="stylesheet" href="/css/topNav.css"  media="all">
+    <link rel="stylesheet" href="/css/personalCenter.css"  media="all">
+    <link rel="stylesheet" href="/js/layui/css/layui.css"  media="all">
+    <script src="/js/layui/layui.js" charset="utf-8"></script>
+    <script src="/publicJs/jquery.js"></script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+</head>
+<body>
+<!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+<!--[if lt IE 9]>
+<script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+<script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<!--
+
+<head th:fragment='list_static'>   // 代码片段
+<div th:replace="layout/list_static :: list_static"></div>    // 引入代码片段  格式=文件路径 :: 代码片段
+
+
+-->
+
+<div th:replace="layout/public_nav :: public_nav" id="test">11</div>
+<div class="personalConent" id="personalConent">
+    <div class="leftNavBox">
+        <div th:replace="layout/left_nav :: left_nav" id="left_nav">11</div>
+    </div>
+    <div class="rightConent">
+        <div class="myself">
+            <div id="pictureUrl" >
+                <!-- tml -->
+            </div>
+            <button type="button" class="layui-btn" id="updatePictureUrl">修改头像</button>
+            <form class="layui-form" action="">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">姓名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" id="username" disabled lay-verify="password" autocomplete="off" placeholder="请输入内容" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">密码</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="password" id="password" disabled lay-verify="password" autocomplete="off" placeholder="请输入内容" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" id="updatePasswordClick">修改密码</button>
+                        <!--<button type="button" class="layui-btn layui-btn-primary" id="cancelUpdate">取消</button>-->
+                        <button type="button" class="layui-btn" lay-submit="" id="updatePasswordSave">保存</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+    console.log(userInfo)
+    $('#username').val(userInfo.user.username);
+    $('#password').val(userInfo.user.password);
+    var addhtml = '<img src="' + userInfo.user.pictureUrl + '" alt="用户头像" width="100px" height="100px">'
+    $('#pictureUrl').append(addhtml)
+    layui.use(['form'], function(){
+        var form = layui.form
+        var layer = layui.layer
+        //监听提交
+        form.on('submit(demo1)', function(data){
+            layer.alert(JSON.stringify(data.field), {
+                password: '最终的提交信息'
+            })
+            return false;
+        });
+        form.on('button(updatePasswordClick)', function(data){
+            console.log($('#password'))
+            return false;
+        });
+
+        //点击修改按钮
+        layui.$('#updatePasswordClick').on('click', function(){
+            $('#password').removeAttr('disabled')
+
+        });
+        //点击取消按钮
+        layui.$('#cancelUpdate').on('click', function(){
+            $('#password').attr('disabled','disabled')
+
+        });
+        //点击保存按钮
+        layui.$('#updatePasswordSave').on('click', function(){
+          var data = {
+              'oldPassword': userInfo.user.password,
+              'newPassword': $('#password').val(),
+          }
+          console.log(data)
+            if(!$('#password').val()) {
+                layui.use('layer', function() { //独立版的layer无需执行这一句
+                    var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                    layer.msg('密码不能为空', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['知道了']
+                    });
+                })
+                return;
+            }
+            // return
+          updatePasswordSave(data)
+        });
+
+        //表单取值
+        layui.$('#LAY-component-form-getval').on('click', function(){
+            var data = form.val('example');
+            alert(JSON.stringify(data));
+        });
+
+        function updatePasswordSave(data){
+            $.ajax({
+                type: "post",
+                url: "/user/modifyUser",
+                data:data,
+                success:function(msg){
+                    console.log(msg)
+                    // refreshTable()
+                    if(msg.code == 200) {
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('成功', {
+                                time: 20000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                        $('#password').attr('disabled','disabled')
+                    }else {
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('失败', {
+                                time: 20000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                    }
+                },
+            })
+
+        }
+
+    });
+    layui.use('upload', function(){
+        var $ = layui.jquery
+            ,upload = layui.upload;
+
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#updatePictureUrl'
+            ,url: '/user/userPicture' //改成您自己的上传接口
+            ,before: function(obj){
+                //预读本地文件示例，不支持ie8
+                // obj.preview(function(index, file, result){
+                //     $('#demo1').attr('src', result); //图片链接（base64）
+                // });
+            }
+            ,done: function(res){
+                var msg = res.msg;
+                //如果上传失败
+                if(res.code !== 200){
+                    return layer.msg(msg);
+                }else{
+                    userInfo.user.pictureUrl = res.data
+                    sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
+                    window.location.reload(true);
+                }
+                //上传成功
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+    });
+</script>
+
+
+<script src="/publicJS/NavRoom.js"></script>
+
+<script src="/publicJS/personalConentHeight.js"></script>
+
+<script src="/publicJS/NavSelect.js"></script>
+</body>
+</html>

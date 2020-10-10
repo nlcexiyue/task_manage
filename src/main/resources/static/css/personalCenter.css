@@ -1,0 +1,99 @@
+/*</div>*/
+.personalConent {
+
+}
+
+.personalConent .leftNavBox {
+    float: left;/*左浮动，脱离文档流*/
+    width: 200px;
+}
+
+.personalConent .rightConent {
+    margin-left: 200px;/*左边的margin*/
+    word-break: break-all; /*强制让内容换行*/
+    overflow: auto;
+}
+
+.layui-nav-tree {
+    width: 100% !important;
+}
+
+.personalConent .leftNavBox,
+.personalConent .rightConent {
+    height: 100%;
+    /*float: left;*/
+}
+
+.personalConent .leftNavBox > div,
+.personalConent .leftNavBox > div > ul {
+    height: 100%;
+}
+
+.demoTable {
+    /*margin-top: 10px;*/
+    /*padding-left: 10px;*/
+}
+.demoTable .layui-input{
+    height: 30px;
+    line-height: 1;
+    line-height: 30px \9;
+    border-radius: 2px;
+    width:200px;
+    font-size: 12px;
+}
+.layui-table-tool-self {
+    display: none;
+}
+.layui-table-page>div {
+    text-align: right;
+}
+.layui-upload>div {
+    margin-top: 10px;
+}
+.layui-upload>div>div {
+    padding: 10px;
+    display: inline-block;
+    border-radius: 5px;
+    border: 1px solid #e6e6e6;
+}
+.layui-upload>div>div>button {
+    margin-left: 10px;
+}
+.layui-upload>button {
+    width: 100%;
+}
+.layui-layer-content {
+    padding:10px;
+}
+.layui-layer-content .layui-form-label{
+    width:50px;
+}
+.layui-layer-content .layui-input-block{
+    margin-left:80px;
+    padding-right:15px;
+}
+.editorBox>input{
+  margin-bottom:10px;
+}
+.editorBox{
+  margin-top:10px;
+}
+#publish {
+    margin-top:10px;
+    width:100%;
+}
+.rightConent{
+    box-sizing: border-box;
+    padding: 10px;
+}
+#pictureUrl {
+    display: inline-block;
+    margin-left:110px;
+    margin-bottom: 15px;
+    border: 1px solid #e6e6e6;
+    padding:10px;
+    border-radius: 5px;
+    width: 100px;
+}
+#updatePictureUrl{
+}

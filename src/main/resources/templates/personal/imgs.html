@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>轮播图管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!--/表示static目录-->
+    <link rel="stylesheet" href="/css/topNav.css"  media="all">
+    <link rel="stylesheet" href="/css/personalCenter.css"  media="all">
+    <link rel="stylesheet" href="/js/layui/css/layui.css"  media="all">
+    <script src="/js/layui/layui.js" charset="utf-8"></script>
+    <script src="/publicJs/jquery.js"></script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+</head>
+<body>
+<!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+<!--[if lt IE 9]>
+<script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+<script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<!--
+
+<head th:fragment='list_static'>   // 代码片段
+<div th:replace="layout/list_static :: list_static"></div>    // 引入代码片段  格式=文件路径 :: 代码片段
+
+
+-->
+
+<div th:replace="layout/public_nav :: public_nav" id="test">11</div>
+<div class="personalConent" id="personalConent">
+    <div class="leftNavBox">
+        <div th:replace="layout/left_nav :: left_nav" id="left_nav">11</div>
+    </div>
+    <div class="rightConent">
+        <div class="layui-collapse" lay-filter="imgCollapse" lay-accordion id="imgCollapseList">
+            <div class="layui-colla-item">
+                <h2 class="layui-colla-title">首页</h2>
+                <div class="layui-colla-content layui-show">
+                    <div class="layui-upload">
+                        <button type="button" class="layui-btn" id="uploadIndex">上传图片</button>
+                        <div id="roomImgBox">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tml -->
+        </div>
+    </div>
+</div>
+
+<script>
+    var fileList1 = []
+    function getImgList(){
+        $.ajax({
+            type: "get",
+            cache: false,                      // 不缓存
+            processData: false,                // jQuery不要去处理发送的数据
+            contentType: false,                // jQuery不要去设置Content-Type请求头
+            url: "/rotation/rotation/" + 0,
+            success:function(msg){
+                console.log(msg)
+                var imgList = msg.data
+                $("#roomImgBox").empty();
+                for(var i = 0 ; i < imgList.length ; i++){
+                    var addHtml = '        <div>\n' +
+                        '            <img src="'+ imgList[i].pictureUrl + '" width="100px" alt="' + imgList[i].filename+ '">\n' +
+                            '\n' +
+                        '    <button type="button" data-id="'+imgList[i].id +'" class="imgListIndexDel">删除</button>'
+                        '        </div>';
+                    $("#roomImgBox").append(addHtml);
+                }
+            },
+        })
+
+    }
+    getImgList()
+    function uploadImg(){
+        layui.use('upload', function(){
+            var $ = layui.jquery
+            var upload = layui.upload;
+
+            //普通图片上传
+            var uploadInst = upload.render({
+                elem: '#uploadIndex'
+                ,data: {modelId:0}
+                ,url: '/rotation/rotation' //改成您自己的上传接口
+                ,before: function(obj){
+                    console.log(obj)
+                    //预读本地文件示例，不支持ie8
+                    // obj.preview(function(index, file, result){
+                    //     $('#demo1').attr('src', result); //图片链接（base64）
+                    // });
+                }
+                ,done: function(res){
+                    //如果上传失败
+                    if(res.code !== 200){
+                        return layer.msg('上传失败');
+                    }else{
+                        getImgList();
+                    }
+                    //上传成功
+                }
+                ,error: function(){
+                    //演示失败状态，并实现重传
+                    var demoText = $('#demoText');
+                    demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                    demoText.find('.demo-reload').on('click', function(){
+                        uploadInst.upload();
+                    });
+                }
+            });
+
+
+        });
+    }
+    uploadImg();
+    function uploadRoomImg(elem,id,i){
+        layui.use('upload', function(){
+            var $ = layui.jquery
+            var upload = layui.upload;
+            //普通图片上传
+            var uploadInst = upload.render({
+                elem: elem
+                ,data: {modelId:id}
+                ,url: '/rotation/rotation' //改成您自己的上传接口
+                ,before: function(obj){
+                    console.log(obj)
+                    //预读本地文件示例，不支持ie8
+                    // obj.preview(function(index, file, result){
+                    //     $('#demo1').attr('src', result); //图片链接（base64）
+                    // });
+                }
+                ,done: function(res){
+                    //如果上传失败
+                    if(res.code !== 200){
+                        return layer.msg('上传失败');
+                    }else{
+                        getOneRoom(id,i);
+                    }
+                    //上传成功
+                }
+                ,error: function(){
+                    //演示失败状态，并实现重传
+                    var demoText = $('#demoText');
+                    demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                    demoText.find('.demo-reload').on('click', function(){
+                        uploadInst.upload();
+                    });
+                }
+            });
+
+
+        });
+    }
+    $(document).on('click', '.imgListIndexDel', function(e) {
+
+        // alert('i添加点击事件成功');
+        console.log(e.target);
+        console.log(e.target.getAttribute('data-id'));
+        $.ajax({
+            type: "get",
+            cache: false,                      // 不缓存
+            processData: false,                // jQuery不要去处理发送的数据
+            contentType: false,                // jQuery不要去设置Content-Type请求头
+            url: "/rotation/remove/" + e.target.getAttribute('data-id'),
+            success:function(msg){
+                console.log(msg)
+                getImgList();
+
+            },
+        })
+    });
+    $(document).on('click', '.imgListRoomDel', function(e) {
+
+        // alert('i添加点击事件成功');
+        console.log(e.target);
+        console.log(e.target.getAttribute('data-id'));
+        var partID = e.target.getAttribute('data-partId')
+        var imgBoxName_id = e.target.parentNode.parentNode.getAttribute('id').split('roomImgBox')[1]
+        console.log(imgBoxName_id)
+        $.ajax({
+            type: "get",
+            cache: false,                      // 不缓存
+            processData: false,                // jQuery不要去处理发送的数据
+            contentType: false,                // jQuery不要去设置Content-Type请求头
+            url: "/rotation/remove/" + e.target.getAttribute('data-id'),
+            success:function(msg){
+                console.log(msg)
+                   getOneRoom(partID,imgBoxName_id)
+
+            },
+        })
+    });
+    function getRoomList(){
+        var data = []
+        $.ajax({
+            type: "get",
+            url: "/part/part",
+            cache: false,                      // 不缓存
+            processData: false,                // jQuery不要去处理发送的数据
+            contentType: false,                // jQuery不要去设置Content-Type请求头
+            success:function(msg){
+                console.log(msg)
+                data = msg.data
+                // $("#imgCollapseList").empty()
+                for(var i = 0 ; i < data.length ; i++){
+                    var addHtml = '            <div class="layui-colla-item">\n' +
+                        '                <h2 class="layui-colla-title">'+ data[i].partName + '</h2>\n' +
+                        '                <div class="layui-colla-content">\n' +
+                        '                    <div class="layui-upload">\n' +
+                        '                        <button type="button" class="layui-btn uploadRoomBtn" data-id="' + data[i].partId + '" id="uploadRoom' + i + '">上传图片</button>\n' +
+                        '                        <div id="roomImgBox' + i + '">\n' +
+                        '                        </div>\n' +
+                        '                    </div>\n' +
+                        '                </div>\n' +
+                        '            </div>'
+                    $("#imgCollapseList").append(addHtml);
+                    uploadRoomImg("#uploadRoom" + i,data[i].partId,i)
+                    getOneRoom(data[i].partId,i)//获取科室列表
+                }
+
+            },
+        })
+
+    }
+    getRoomList();//获取科室列表
+    function getOneRoom(data,i) {
+        $.ajax({
+            type: "get",
+            cache: false,                      // 不缓存
+            processData: false,                // jQuery不要去处理发送的数据
+            contentType: false,                // jQuery不要去设置Content-Type请求头
+            url: "/rotation/rotation/" + data,
+            success:function(msg){
+                if (!msg) {
+                    return
+                }
+                console.log(msg)
+                var imgList = msg.data
+                var idName = '#roomImgBox' + i
+                fileList1[i] = imgList;
+                $(idName).empty()
+                for(var j = 0 ; j < imgList.length ; j++){
+                    var addHtml = '        <div>\n' +
+                        '            <img src="'+ imgList[j].pictureUrl + '" width="100px" alt="' + imgList[j].filename+ '">\n' +
+                        '\n' +
+                        '    <button type="button" data-id="'+imgList[j].id +'" data-partId="'+ data +'" class="imgListRoomDel">删除</button>'
+                    '        </div>';
+                    console.log(addHtml)
+                    $(idName).append(addHtml);
+                }
+                showCollapse()//渲染之后再监听面板的dom元素，才有展开折叠的效果
+            }
+        })
+    }
+    function showCollapse(){
+        layui.use(['element', 'layer'], function(){
+            var element = layui.element;
+            var layer = layui.layer;
+
+            //监听折叠
+            element.on('collapse(imgCollapse)', function(data){
+                // layer.msg('展开状态：'+ data.show);
+            });
+        });
+    }
+
+</script>
+
+
+
+<script src="/publicJS/NavRoom.js"></script>
+
+<script src="/publicJS/personalConentHeight.js"></script>
+
+<script src="/publicJS/NavSelect.js"></script>
+
+</body>
+</html>

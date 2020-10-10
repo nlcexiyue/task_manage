@@ -1,0 +1,42 @@
+
+.essayItem {
+    padding-bottom: 10px;
+    padding-top: 10px;
+    border-bottom: 1px solid #e6e6e6;
+}
+.essayItemTitle {
+    font-size: 24px;
+    font-weight: bold;
+    color:#333;
+    cursor: pointer;
+}
+.essayTime {
+    color:#c0c4cc;
+}
+.essayItemTitle:hover {
+    color:#5fb878;
+}
+.newsPage {
+     text-align: right;
+ }
+#essayDetailBox .title,
+#messageDetailBox .title{
+    font-size: 24px;
+    font-weight: bold;
+    color:#333;
+    text-align: center;
+}
+#essayDetailBox .layui-card-header,
+#messageDetailBox .layui-card-header {
+    text-align: right;
+}
+#essayDetailBox .layui-card-header>.tag,
+#messageDetailBox .layui-card-header>.tag{
+     margin:0 10px;
+    color: #c0c4cc;
+ }
+.layui-card-header .layui-input{
+    display: inline-block;
+    width: 50%;
+    padding-left: 10px;
+}

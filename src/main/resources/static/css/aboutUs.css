@@ -1,0 +1,14 @@
+#roomImgBox img {
+    margin: auto;
+    display: block;
+}
+.roomTitle {
+    font-size: 48px;
+    font-weight: bold;
+    color:#5fb878;
+    text-align: center;
+    margin:10px 0;
+}
+.roomDetail{
+    margin:10px;
+}

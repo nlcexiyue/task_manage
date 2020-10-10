@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>作业管理系统</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<!--/表示static目录-->
+  <link rel="stylesheet" href="/css/card.css"  media="all">
+  <link rel="stylesheet" href="/css/topNav.css"  media="all">
+  <link rel="stylesheet" href="/js/layui/css/layui.css"  media="all">
+<script src="/js/layui/layui.js"></script>
+  <script src="/publicJs/jquery.js"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+  <style>
+    .indexBox>div{
+      padding:10px;
+    }
+    .indexBox>div,
+    .indexBox>div>div{
+      height:100%;
+    }
+    .indexBox>div>div{
+      overflow: auto;
+    }
+    #essayItemBox,
+    #imgsBox,
+    #scroll,
+    #taskBox{
+      overflow: auto;
+    }
+    #indexBottomBox .layui-card-body{
+      padding:0
+    }
+    #timeTable + div {
+      margin: 0;
+    }
+    .essayContent{
+      font-size: 12px;
+      color: #c0c4cc;
+      /*float: right;*/
+      position: absolute;
+      right: 0;
+      bottom: 0;
+    }
+    .messageItemTitle,
+    .essayItemTitle{
+      display: inline-block;
+      cursor: pointer;
+      padding-right: 100px;
+    }
+    .messageItemTitle:hover,
+    .essayItemTitle:hover{
+      color:#5fb878;
+    }
+    #roomImgBox img {
+      margin: auto;
+      display: block;
+    }
+    .layui-table td,
+    .layui-table th,
+    .layui-table-col-set,
+    .layui-table-fixed-r,
+    .layui-table-grid-down,
+    .layui-table-header,
+    .layui-table-page,
+    .layui-table-tips-main,
+    .layui-table-tool,
+    .layui-table-total,
+    .layui-table-view,
+    .layui-table[lay-skin=line],
+    .layui-table[lay-skin=row] {
+      border-color: #c4c4c4!important;
+    }
+    .layui-table thead tr{
+      color:#fff!important;
+      background-color: #009688!important;
+    }
+    .layui-table[lay-size=sm] th{
+      font-size: 14px!important;
+      font-weight: bold!important;
+    }
+    .layui-card-body .layui-table{
+      margin: 0px!important;
+    }
+    .layui-carousel img {
+      object-fit: contain;
+      /*width: 100%;*/
+      max-width: 100%;
+      height: 100%;
+    }
+    .essayItem {
+      height:auto;
+      position: relative;
+    }
+    .layui-layer-content {
+      padding:20px;
+    }
+    .layui-layer-content .layui-input-block {
+      margin-left: 70px;
+    }
+    .layui-layer-content .layui-form-label {
+      width: 40px;
+    }
+    table td>div{
+
+      width: 160px;
+    }
+    table td>div.word{
+
+      width: 80px;
+    }
+  </style>
+</head>
+<body>
+<!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+<!--[if lt IE 9]>
+<script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+<script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<!--
+
+<head th:fragment='list_static'>   // 代码片段
+<div th:replace="layout/list_static :: list_static"></div>    // 引入代码片段  格式=文件路径 :: 代码片段
+
+
+-->
+
+<div th:replace="layout/public_nav :: public_nav" id="test">11</div>
+<div class="layui-row indexBox" id="indexTopBox">
+  <div class="layui-col-xs12 layui-col-md4">
+        <div class="layui-card">
+          <div class="layui-card-header">新闻</div>
+          <div class="layui-card-body" id="essayItemBox">
+            <!-- tml-->
+          </div>
+        </div>
+  </div>
+  <div class="layui-col-xs12 layui-col-md4">
+    <div class="layui-row">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">轮播图</div>
+          <div class="layui-card-body" id="imgsBox">
+            <div class="layui-carousel" id="test1" lay-filter="test1">
+              <div carousel-item="" id="roomImgBox">
+                  <!-- tml -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="layui-col-xs12 layui-col-md4">
+    <div class="layui-row">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">通知</div>
+          <div class="layui-card-body" id="scroll">
+            <div class="" id="messageItemBox">
+              <!-- tml-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+<div class="layui-row indexBox" id="indexBottomBox">
+  <div class="layui-col-xs12 layui-col-md12">
+    <div class="layui-row">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">
+            <span>日程</span>
+            <div style="display: inline-block;float: right">
+              <button type="button" class="layui-btn layui-btn-xs" id="prevWeek">上一周</button>
+              <button type="button" class="layui-btn layui-btn-xs" id="thisWeek">本周</button>
+              <button type="button" class="layui-btn layui-btn-xs" id="nextWeek">下一周</button>
+            </div>
+            <!--<button type="button" id="addTask">新建日程</button>-->
+          </div>
+          <div class="layui-card-body" id="taskBox">
+            <!-- tml-->
+            <table class="layui-table" lay-size="sm">
+              <thead>
+              <tr id="thead">
+                <!-- tml -->
+              </tr>
+              </thead>
+              <tbody id="tbody">
+
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    $(function(){
+        var userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+        console.log(userInfo)//userInfo.user.id
+        if(!userInfo){
+            userInfo = {user:{id:-1}}//不然会报错
+        }
+        var taskListN = ['taskList1','taskList2','taskList3','taskList4','taskList5','taskList6','taskList7'];
+        function getDates(currentTime) { //JS获取当前周从星期一到星期天的日期
+            var currentDate
+            currentTime ? currentDate = new Date(currentTime) : currentDate = new Date()
+            var timesStamp = currentDate.getTime();
+            // console.log(timesStamp)
+            var currenDay = currentDate.getDay();
+            // console.log(currenDay)
+            var dates = [];
+            for (var i = 0; i < 7; i++) {
+                var d = new Date(timesStamp + 24 * 60 * 60 * 1000 * (i - (currenDay + 6) % 7))
+                var dd = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate()
+                dates.push(dd);
+                // dates.push(new Date(timesStamp + 24 * 60 * 60 * 1000 * (i - (currenDay + 6) % 7)).toLocaleDateString().replace(/\//g, '-'));//toLocaleDateString()不同浏览器显示不一样，不能用
+            }
+            for (var i = 0; i < 7; i++) {
+                var datestr = dates[i].split('-')
+                // console.log(datestr)
+                if(datestr[1] < 10){
+                    datestr[1] = '0' +datestr[1]
+                }
+                if(datestr[2] < 10){
+                    datestr[2] = '0' +datestr[2]
+                }
+                dates[i] = datestr.join('-')
+            }
+            return dates
+        }
+        var weekDates = getDates(new Date())//周一到周日的日期 :["2020-02-17", "2020-02-18", "2020-02-19", "2020-02-20", "2020-02-21", "2020-02-22", "2020-02-23"]
+        function goToWeek(tableDate, Num) {
+            var date = GetDateStr(tableDate[6], Num)
+            weekDates = getDates(date)
+            console.log(weekDates)
+            refreshTable()
+        }
+        function getDates(currentTime) { //JS获取当前周从星期一到星期天的日期
+            console.log(currentTime)
+            var currentDate
+            // if(currentTime){
+            //     currentTime = currentTime.replace(/-/g,"/")
+            //     currentDate = new Date(currentTime)
+            // }else{
+            //     currentDate = new Date()
+            // }
+            currentTime ? currentDate = new Date(currentTime) : currentDate = new Date()
+            // currentDate = currentDate.replace(/-/g,"/")
+            var timesStamp = currentDate.getTime();
+            // console.log(timesStamp)
+            var currenDay = currentDate.getDay();
+            // console.log(currenDay)
+            var dates = [];
+            for (var i = 0; i < 7; i++) {
+                var d = new Date(timesStamp + 24 * 60 * 60 * 1000 * (i - (currenDay + 6) % 7))
+                var dd = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate()
+                dates.push(dd);
+                // dates.push(new Date(timesStamp + 24 * 60 * 60 * 1000 * (i - (currenDay + 6) % 7)).toLocaleDateString().replace(/\//g, '-'));//toLocaleDateString()不同浏览器显示不一样，不能用
+            }
+            for (var i = 0; i < 7; i++) {
+                var datestr = dates[i].split('-')
+                // console.log(datestr)
+                if(datestr[1] < 10){
+                    datestr[1] = '0' +datestr[1]
+                }
+                if(datestr[2] < 10){
+                    datestr[2] = '0' +datestr[2]
+                }
+                dates[i] = datestr.join('-')
+            }
+            // console.log(dates)
+            console.log(dates,$('#thead'))
+            $('#thead').empty()
+            var addHtml = '\n' +
+                '                <th>姓名</th>\n' +
+                '                <th>工号</th>\n' +
+                '                <th>职位</th>\n'
+            $('#thead').append(addHtml)
+            var week = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+            for (var i = 0 ; i < dates.length ; i++) {
+                var addth = '<th>' + '<div>' + week[i] + '</div>' + '<div>' +  dates[i] + '</div>' + '</th>'
+                $('#thead').append(addth)
+            }
+            return dates
+            // return datestr
+        }
+        function GetDateStr(DATE, AddDayCount) {
+            var newDateStr = DATE.replace(/-/g,"/")//ie8 的 new Date()只认识2000/12/12格式 2000-12-12不行
+            var dd = new Date(newDateStr)
+            console.log(newDateStr)
+            console.log(dd)
+            dd.setDate(dd.getDate() + AddDayCount); //获取AddDayCount天后的日期
+            var y = dd.getFullYear();
+            var m = dd.getMonth() + 1; //获取当前月份的日期
+            var d = dd.getDate();
+            console.log(y, m, d)
+            // if(m < 10){
+            //   m = '0' + m
+            // }
+            // if(d < 10){
+            //   d = '0' + d
+            // }
+            return y + "/" + m + "/" + d;//ie8 的 new Date()只认识2000/12/12格式 2000-12-12不行
+        }
+        function thisWeek(){
+            var date = new Date()
+            weekDates = getDates(date)
+            // this.tableDate = this.getDates()
+            // console.log(this.tableDate)
+            refreshTable()
+        }
+        function refreshTable(){
+            var jsonData = {}
+            var beginTime = weekDates[0] + ' 00:00:00'
+            var endTime = weekDates[6] + ' 23:59:59'
+            $.ajax({
+                type: "post",
+                url: "/task/userAndTasks",
+                dataType: 'json',
+                data:{'beginTime':beginTime,'endTime':endTime},
+                success:function(msg){
+                    // console.log(msg)
+                    jsonData = msg
+                    var resultJoint = ""
+                    // 遍历data
+                    $.each(jsonData.data, function (key, userData) {
+                        // 职位名称
+                        var position = userData.position;
+
+                        // 判断职务背景颜色
+                        var positionColor = "";
+                        if(position == "职务一"){
+                            positionColor = "#dcedff";
+                        }else if(position == "职务二"){
+                            positionColor = "#f9f3d4";
+                        }else{
+                            positionColor = "#d1f1bf";
+                        }
+
+                        // 拼接标签内容
+                        resultJoint+="<tr style='background:" + positionColor + "'> <td id=" + userData.id + ">" + "<div class='word'>" + userData.name + "</div>" + "</td> <td>" + "<div class='word'>" + userData.jobNumber + "</div>" + "</td> <td>" +"<div class='word'>" + position + "</div>" + "</td>";
+
+                        // console.log(userData)
+                        for(var i = 0 ; i < 7 ; i++){
+                            // 遍历周一工作内容
+                            if(userData[taskListN[i]] != null && userData[taskListN[i]].length > 0){
+                                resultJoint += "<td>";
+                                $.each(userData[taskListN[i]], function (key, value) {
+                                    //alert(value.title+" "+value.taskId+" "+value.beginTime+" "+value.endTime);
+                                    // console.log(sessionStorage.getItem('userInfo'))
+                                    if(value.userId == userInfo.user.id){
+                                        console.log(value,userInfo.user.id)
+                                        resultJoint += "<div id='" + value.taskId + "||" + value.beginTime + "||" + value.endTime + "||" + value.title + "' style='background:#ffffff;border-radius:5px;margin:5px;padding:8px'>"+
+                                            " 时间 ： " + (value.beginTime.slice(10)) + "至" + (value.endTime.slice(10)) + "<br>" + " 内容 ： " +  value.title + "<br>" +
+                                            "<button type='button' class='editSchedule layui-btn layui-btn-primary layui-btn-sm'><i class='layui-icon layui-icon-edit'></i></button>"+ // 修改
+                                            "<button type='button' class='delSchedule layui-btn layui-btn-primary layui-btn-sm'><i class='layui-icon layui-icon-delete'></i></button>"+  // 删除
+                                            "</div>";
+
+                                    }else{
+                                        console.log(value,userInfo.user.id)
+
+                                        resultJoint += "<div id='" + value.taskId + "||" + value.beginTime + "||" + value.endTime + "||" + value.title + "' style='background:#ffffff;border-radius:5px;margin:5px;padding:8px'>"+
+                                            " 时间 ： " + (value.beginTime.slice(10)) + " 至 " + (value.endTime.slice(10)) + "<br>" + " 内容 ： " +  value.title + "<br>" +
+                                            "</div>";
+                                    }
+                                });
+                                // console.log(userData.id)
+                                if(userData.id == userInfo.user.id){
+                                    resultJoint += "<button type='button' class='insertSchedule layui-btn layui-btn-primary layui-btn-sm'>新添日程</button></td>";
+                                }
+                            }else{
+                                if(userData.id == userInfo.user.id){
+                                    resultJoint += "<td>";
+                                    resultJoint += "<button type='button' class='insertSchedule layui-btn layui-btn-primary layui-btn-sm'>新添日程</button></td>";
+                                    resultJoint += "</td>";
+                                }else{
+
+                                    resultJoint += "<td></td>";
+                                }
+                            }
+                        }
+
+                        resultJoint += "</tr>";
+                    });
+
+                    // 把处理好的列表数据放到页面上进行展示
+                    $("#tbody").html(resultJoint);        // 点击修改
+                    $(".editSchedule").click(function(){
+                        // 获取父元素div中的id属性值
+                        var id=$(this).parent().attr('id');
+                        var splitContent = id.split("||");
+                        // alert("数据回显 taskId:"+splitContent[0]+"  beginTime:"+splitContent[1]+"  endTime"+splitContent[2]+"  title:"+splitContent[3])
+
+                        var beginTime = splitContent[1]
+                        var endTime = splitContent[2]
+                        console.log(beginTime,endTime)
+                        // 具体弹框后逻辑
+
+                        layui.use('layer', function(){ //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.open({
+                                type: 1
+                                ,offset: 'auto' //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                                ,id: 'layerAdd' //防止重复弹出
+                                ,content: '\n' +
+                                    '        <form class="layui-form" action="" lay-filter="addModelForm">\n' +
+                                    '            <div class="layui-form-item">\n' +
+                                    '                <label class="layui-form-label">时间</label>\n' +
+                                    '                <div class="layui-input-block">\n' +
+                                    '                    <input type="text" name="time" lay-verify="required" class="layui-input" id="time" placeholder=" - ">\n' +
+                                    '                </div>\n' +
+                                    '            </div>\n' +
+                                    '            <div class="layui-form-item">\n' +
+                                    '                <label class="layui-form-label">内容</label>\n' +
+                                    '                <div class="layui-input-block">\n' +
+                                    '<textarea placeholder="请输入内容" class="layui-textarea" name="title"></textarea>\n' +
+                                    // '                    <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入标题" class="layui-input">\n' +
+                                    '                </div>\n' +
+                                    '            </div>\n' +
+                                    '        </form>'
+                                ,btn: ['确定','取消']
+                                ,btnAlign: 'c' //按钮居中
+                                ,shade: 0.8 //显示遮罩
+                                ,yes: function(){
+                                    // layer.closeAll();
+                                },
+                                success: function(layero, index){
+                                    console.log(layero, index);
+                                    var btn = layero.find('.layui-layer-btn');
+                                    layui.use('form', function () {
+                                        var form = layui.form; //只有执行了这一步，部分表单元素才会修饰成功
+                                        form.val('addModelForm', {
+                                            "time": beginTime.split(' ')[1] + ' - ' + endTime.split(' ')[1] // "name": "value"
+                                            ,"title": splitContent[3]
+                                        });
+                                        // -需要加空格
+                                        // $('#time').val(beginTime.split(' ')[1] + ' - ' + endTime.split(' ')[1])
+                                        btn.find('.layui-layer-btn0').click(function(){
+                                            console.log('确定')
+                                            var data = form.val('addModelForm');
+                                            data.taskId = splitContent[0]
+                                            data.beginTime = beginTime.split(' ')[0] + ' ' + data.time.split(' - ')[0]
+                                            data.endTime = endTime.split(' ')[0] + ' ' + data.time.split(' - ')[1]
+                                            console.log(data);
+                                            for(var key in data){
+                                                if(!data[key]) {
+                                                    console.log(key)
+                                                    layui.use('layer', function() { //独立版的layer无需执行这一句
+                                                        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+
+                                                        layer.msg('时间或内容不能为空', {
+                                                            time: 2000, //20s后自动关闭
+                                                            btn: ['知道了']
+                                                        });
+                                                    })
+                                                    return;
+                                                }
+                                            }
+                                            layer.closeAll();
+                                            updateTask(data)
+                                        });
+                                        btn.find('.layui-layer-btn1').click(function(){
+                                            console.log('取消')
+                                        });
+                                    });
+                                    layui.use('laydate', function() { //独立版的layer无需执行这一句
+                                        var laydate = layui.laydate;
+                                        //时间范围
+                                        laydate.render({
+                                            elem: '#time'
+                                            , type: 'time'
+                                            , range: true
+                                        });
+                                    })
+                                }
+                            });
+
+
+                        });
+
+                    });
+
+                    // 点击删除
+                    $(".delSchedule").click(function(){
+                        // // 获取父元素div中的id属性值
+                        var id=$(this).parent().attr('id');
+                        var splitContent = id.split("||");
+                        // alert("删除tackId:"+splitContent[0]);
+                        var data = {taskId : splitContent[0]}
+                        layui.use('layer', function(){ //独立版的layer无需执行这一句
+                            var $ = layui.jquery
+                            var layer = layui.layer; //独立版的layer无需执行这一句
+                            // var form = layui.form
+                            //触发事件
+                            layer.open({
+                                type: 1
+                                ,offset: 'auto' //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                                ,id: 'updateModel' //防止重复弹出
+                                ,content: '此操作将永久删除选中数据，是否继续？'
+                                ,btn: ['确定','关闭']
+                                ,btnAlign: 'c' //按钮居中
+                                ,shade: 0.8 //不显示遮罩
+                                ,success: function(layero){
+                                    var btn = layero.find('.layui-layer-btn');
+                                    btn.find('.layui-layer-btn0').click(function(){
+                                        deleteTask(data)
+                                    });
+                                }
+                                ,yes: function(){
+                                    layer.closeAll();
+                                }
+                            });
+
+                        });
+                        // deleteTask(data)
+                    });
+
+                    // 新添日程
+                    $(".insertSchedule").click(function(){
+
+                        // 新增日期
+                        // 获取父元素div中的id属性值
+                        /*var id=$(this).parent().attr('id');
+                        var splitContent = id.split("||");
+                        alert(splitContent)*/
+                        // $("table td").click(function(){
+                            // 获取当前行的索引
+                            var rowIndex = $(this).parent().index();
+                            // 获取当前列的索引
+                            // var columnIndex = $(this).index();
+                        var day = weekDates[rowIndex-3]
+                        console.log(rowIndex,day)
+
+                        // alert("新添日程")
+                        layui.use('layer', function(){ //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.open({
+                                type: 1
+                                ,offset: 'auto' //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                                ,id: 'layerAdd' //防止重复弹出
+                                ,content: '\n' +
+                                    '        <form class="layui-form" action="" lay-filter="addModelForm">\n' +
+                                    '            <div class="layui-form-item">\n' +
+                                    '                <label class="layui-form-label">时间</label>\n' +
+                                    '                <div class="layui-input-block">\n' +
+                                    '                    <input type="text" name="time" lay-verify="time" class="insertTime layui-input" id="time" placeholder=" - ">\n' +
+                                    '                </div>\n' +
+                                    '            </div>\n' +
+                                    '            <div class="layui-form-item">\n' +
+                                    '                <label class="layui-form-label">内容</label>\n' +
+                                    '                <div class="layui-input-block">\n' +
+                                    '<textarea placeholder="请输入内容" class="layui-textarea" name="title"></textarea>\n' +
+                                    // '                    <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入标题" class="layui-input">\n' +
+                                    '                </div>\n' +
+                                    '            </div>\n' +
+                                    '        </form>'
+                                ,btn: ['确定','取消']
+                                ,btnAlign: 'c' //按钮居中
+                                ,shade: 0.8 //显示遮罩
+                                ,yes: function(){
+                                    // layer.closeAll();
+                                },
+                                success: function(layero, index){
+                                    console.log(layero, index);
+                                    var btn = layero.find('.layui-layer-btn');
+                                    layui.use('form', function () {
+                                        var form = layui.form; //只有执行了这一步，部分表单元素才会修饰成功
+                                        btn.find('.layui-layer-btn0').click(function(){
+                                            console.log('确定')
+                                            var data = form.val('addModelForm');
+                                            data.beginTime = day + ' '+ data.time.split(' - ')[0]
+                                            data.endTime = day + ' '+ data.time.split(' - ')[1]
+                                            console.log(data)
+                                            // return;
+
+                                            for(var key in data){
+                                                if(!data[key]) {
+                                                    console.log(key)
+                                                    layui.use('layer', function() { //独立版的layer无需执行这一句
+                                                        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+
+                                                        layer.msg('时间或内容不能为空', {
+                                                            time: 2000, //20s后自动关闭
+                                                            btn: ['知道了']
+                                                        });
+                                                    })
+                                                    return;
+                                                }
+                                            }
+                                            layer.closeAll();
+                                            addTask(data)
+                                            // alert(JSON.stringify(data));
+                                        });
+                                        btn.find('.layui-layer-btn1').click(function(){
+                                            console.log('取消')
+                                        });
+                                    });
+                                    layui.use('laydate', function() { //独立版的layer无需执行这一句
+                                        var laydate = layui.laydate;
+                                        //时间范围
+                                        laydate.render({
+                                            elem: '#time'
+                                            , type: 'time'
+                                            , range: true
+                                        });
+                                    })
+                                }
+                            });
+
+
+                        });
+                    });
+
+                },
+            })
+
+        }
+        refreshTable();
+        //上周
+        $("#prevWeek").click(function(){
+            goToWeek(weekDates,-7)
+            // alert("上一周")
+        });
+        //下周
+        $("#nextWeek").click(function(){
+            goToWeek(weekDates,7)
+        });
+        //本周
+        $("#thisWeek").click(function(){
+            thisWeek()
+        });
+        function deleteTask(data) {
+            $.ajax({
+                type: "post",
+                url: "/task/deleteTask",
+                dataType: 'json',
+                data:data,
+                success:function(msg){
+                    console.log(msg)
+                    if(msg.code == 200){
+
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('成功', {
+                                time: 2000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                        refreshTable();
+                    }else {
+
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('失败', {
+                                time: 2000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                    }
+                },
+            })
+        }
+        function updateTask(data) {
+            $.ajax({
+                type: "post",
+                url: "/task/updateTasks",
+                dataType: 'json',
+                data:data,
+                success:function(msg){
+                    console.log(msg)
+                    if(msg.code == 200){
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('成功', {
+                                time: 2000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                        refreshTable();
+                    }else {
+
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('失败', {
+                                time: 2000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                    }
+                },
+            })
+        }
+        function addTask(data) {
+            $.ajax({
+                type: "post",
+                url: "/task/addTask",
+                dataType: 'json',
+                data:data,
+                success:function(msg){
+                    console.log(msg)
+                    if(msg.code == 200){
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('成功', {
+                                time: 2000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                        refreshTable();
+                    }else {
+
+                        layui.use('layer', function() { //独立版的layer无需执行这一句
+                            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                            layer.msg('失败', {
+                                time: 2000, //20s后自动关闭
+                                btn: ['知道了']
+                            });
+                        })
+                    }
+                },
+            })
+        }
+    });
+</script>
+
+<script>
+    $(function () {
+        var messageList = []
+        var messagePages = 0
+
+        function refreshNew(){
+            var essayList = []
+            $.ajax({
+                type: "post",
+                url: "/news/allHomeNews",
+                dataType: 'json',
+                // cache: false,                      // 不缓存
+                // processData: false,                // jQuery不要去处理发送的数据
+                // contentType: false,                // jQuery不要去设置Content-Type请求头
+                data:{"pageNum":1, "pageSize":10},
+                success:function(msg){
+                    console.log(msg)
+                    essayList = msg.data.list
+                    for(var i = 0 ; i < essayList.length ; i++){
+                        var addHtml = '   <div class="essayItem" id="essayItem">\n' +
+                            '                            <div class="essayItemTitle audiot_style" data-id="' + essayList[i].id + '">\n'
+                            + essayList[i].title +
+                            '                            </div>\n' +
+                            '                            <div class="essayContent essayContent_style">\n' +
+                            '                                <div class="essayTime">' + essayList[i].updateTime.slice(0,10) + '</div>\n' +
+                            '                            </div>\n' +
+                            '                    </div>';
+                        $("#essayItemBox").append(addHtml);
+                    }
+                },
+            })
+
+        }
+        function refreshMessage(pageNum){
+            var essayList = []
+            $.ajax({
+                type: "post",
+                url: "/notice/allHomeNotices",
+                dataType: 'json',
+                data:{"pageNum":pageNum, "pageSize":10},
+                success:function(msg){
+                    console.log(msg)
+                    essayList = msg.data.list
+                    messageList = msg.data.list
+                    messagePages = msg.data.pages
+                    for(var i = 0 ; i < essayList.length ; i++){
+                        var addHtml = '   <div class="essayItem" id="essayItem">\n' +
+                            '                            <div class="messageItemTitle audiot_style" data-id="' + essayList[i].id + '">\n'
+                            + essayList[i].title +
+                            '                            </div>\n' +
+                            '                            <div class="essayContent essayContent_style">\n' +
+                            '                                <div class="essayTime">' + essayList[i].updateTime.slice(0,10) + '</div>\n' +
+                            '                            </div>\n' +
+                            '                    </div>';
+                        $("#messageItemBox").append(addHtml);
+                    }
+                },
+            })
+
+        }
+        function getImgList(){
+            $.ajax({
+                type: "get",
+                url: "/rotation/rotation/" + 0,
+                cache: false,                      // 不缓存
+                processData: false,                // jQuery不要去处理发送的数据
+                contentType: false,                // jQuery不要去设置Content-Type请求头
+                success:function(msg){
+                    console.log(msg)
+                    imgList = msg.data
+                    for(var i = 0 ; i < imgList.length ; i++){
+                        var addHtml = '        <div>\n' +
+                            '            <img src="'+ imgList[i].pictureUrl + '" alt="">\n' +
+                            '        </div>';
+                        $("#roomImgBox").append(addHtml);
+                    }
+
+                    layui.use(['carousel', 'form'], function() {
+                        var carousel = layui.carousel
+                        var form = layui.form;
+
+                        //常规轮播
+                        carousel.render({
+                            elem: '#test1'
+                            , arrow: 'always'
+                            ,width:'100%'
+                        });
+                    });
+                },
+            })
+
+        }
+        refreshNew();//获取新闻列表
+        refreshMessage(1);//获取通知列表
+        getImgList();//获取科室轮播图
+        layui.use('flow', function() {
+            var flow = layui.flow;
+            flow.load({
+                elem: '#scroll' //流加载容器
+                , scrollElem: '#scroll' //滚动条所在元素，一般不用填，此处只是演示需要。
+                , done: function (page, next) { //执行下一页的回调
+                    //模拟数据插入
+                    console.log(page, next)
+                    setTimeout(function () {
+
+
+                        //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                        //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                        next(refreshMessage(page), page < messagePages); //假设总页数为 10
+                    }, 0);
+                }
+            });
+        })
+    });
+    $(document).on('click', '.essayItemTitle', function(e) {
+
+        // alert('i添加点击事件成功');
+        console.log(e.target);
+        console.log(e.target.getAttribute('data-id'));
+        //window.location.href.split('/documentManage')[0]
+        window.location.href = '/newsDetail?essayId=' + e.target.getAttribute('data-id')
+    });
+    $(document).on('click', '.messageItemTitle', function(e) {
+
+        // alert('i添加点击事件成功');
+        console.log(e.target);
+        console.log(e.target.getAttribute('data-id'));
+        //window.location.href.split('/documentManage')[0]
+        window.location.href = '/messageDetail?messageId=' + e.target.getAttribute('data-id')
+    });
+    $(document).on('click', '#addTask', function(e) {
+
+        layui.use('layer', function(){ //独立版的layer无需执行这一句
+            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+            layer.open({
+                type: 1
+                ,offset: 'auto' //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                ,id: 'layerAdd' //防止重复弹出
+                ,content: '\n' +
+                    '        <form class="layui-form" action="" lay-filter="addModelForm">\n' +
+                    '            <div class="layui-form-item">\n' +
+                    '                <label class="layui-form-label">时间范围</label>\n' +
+                    '                <div class="layui-input-block">\n' +
+                    '                    <input type="text" name="time" lay-verify="time" class="layui-input" id="time" placeholder=" - ">\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '            <div class="layui-form-item">\n' +
+                    '                <label class="layui-form-label">内容</label>\n' +
+                    '                <div class="layui-input-block">\n' +
+                    '                    <input type="text" name="name" lay-verify="name" autocomplete="off" placeholder="请输入标题" class="layui-input">\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '        </form>'
+                ,btn: ['确定','取消']
+                ,btnAlign: 'c' //按钮居中
+                ,shade: 0.8 //显示遮罩
+                ,yes: function(){
+                    layer.closeAll();
+                },
+                success: function(layero, index){
+                    alert($("#time").val());
+                    console.log(layero, index);
+                    var btn = layero.find('.layui-layer-btn');
+                    layui.use('form', function () {
+                        var form = layui.form; //只有执行了这一步，部分表单元素才会修饰成功
+                        btn.find('.layui-layer-btn0').click(function(){
+                            console.log('确定')
+                            var data = form.val('addModelForm');
+                            // alert(JSON.stringify(data));
+                        });
+                        btn.find('.layui-layer-btn1').click(function(){
+                            console.log('取消')
+                        });
+                    });
+                    layui.use('laydate', function() { //独立版的layer无需执行这一句
+                        var laydate = layui.laydate;
+                        //时间范围
+                        laydate.render({
+                            elem: '#time'
+                            , type: 'time'
+                            , range: true
+                        });
+                    })
+                }
+            });
+
+
+        });
+    });
+
+    var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+    //   this.$refs.bigImg.style.minHeight = windowHeight + 'px'; //为遮罩设高度
+    document.getElementById('indexTopBox').style.height = (windowHeight -60) / 2 + 'px'; //为遮罩设高度
+    document.getElementById('indexBottomBox').style.height = (windowHeight -60) / 2 + 'px'; //为遮罩设高度
+    document.getElementById('essayItemBox').style.height = (windowHeight -60) / 2 - 43 -20 -20 + 'px'; //为遮罩设高度
+    document.getElementById('taskBox').style.height = (windowHeight -60) / 2 - 43 -20 -20 + 'px'; //为遮罩设高度
+    document.getElementById('imgsBox').style.height = (windowHeight -60) / 2 - 43 -20 -20 -2 + 'px'; //为遮罩设高度
+    document.getElementById('scroll').style.height = (windowHeight -60) / 2 - 43 -20 -20 -2 + 'px'; //为遮罩设高度
+
+</script>
+
+
+<script src="/publicJS/NavRoom.js"></script>
+
+<script src="/publicJS/NavSelect.js"></script>
+
+</body>
+</html>

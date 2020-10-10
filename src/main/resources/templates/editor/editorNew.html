@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>新闻管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!--/表示static目录-->
+    <link rel="stylesheet" href="/css/topNav.css"  media="all">
+    <link rel="stylesheet" href="/css/personalCenter.css"  media="all">
+    <link rel="stylesheet" href="/js/layui/css/layui.css"  media="all">
+    <script src="/js/layui/layui.js"></script>
+    <script src="/publicJs/jquery.js"></script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+    <link rel="stylesheet" href="/kindeditor/themes/default/default.css"/>
+    <script charset="utf-8" src="/kindeditor/kindeditor-all-min.js"></script>
+    <script charset="utf-8" src="/kindeditor/lang/zh-CN.js"></script>
+    <style>
+        .editer>div{
+            width: 100%!important;
+        }
+    </style>
+</head>
+<body>
+<!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+<!--[if lt IE 9]>
+<script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+<script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<!--
+
+<head th:fragment='list_static'>   // 代码片段
+<div th:replace="layout/list_static :: list_static"></div>    // 引入代码片段  格式=文件路径 :: 代码片段
+
+
+-->
+
+<div th:replace="layout/public_nav :: public_nav" id="test">11</div>
+<div class="personalConent" id="personalConent">
+    <div class="leftNavBox">
+        <div th:replace="layout/left_nav :: left_nav" id="left_nav">11</div>
+    </div>
+    <div class="rightConent">
+        <div class="editorBox">
+            <input type="text" id="title" name="title" placeholder="请输入标题" autocomplete="off" class="layui-input">
+            <textarea id="demo" style="display: none;"></textarea>
+            <div class="col-md-10 data editer">
+                <textarea name="content" style="width:800px;height:400px;visibility:hidden;"></textarea>
+            </div>
+        </div>
+        <button type="button" class="layui-btn" id="publish">发布</button>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+
+    // var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+
+    var editor;
+    KindEditor.ready(function (K) {
+        editor = K.create('textarea[name="content"]', {
+            //否允许浏览服务器已上传文件,默认是false
+            allowFileManager: true,
+            uploadJson: "/news/newsUploadPicture",
+            allowImageUpload: true,
+            filePostName: 'file',
+            afterCreate: function () {
+                var self = this;
+                KindEditor.ctrl(self.edit.doc, 13, function () {
+                    self.sync();
+                    if (editor.isEmpty()) {
+                        alert('请输入内容');
+                        return false;
+                    }
+                    console.log('ctrl+enter')
+                    //执行其他事件
+                    console.log(editor.html())
+                });
+            },
+            afterBlur: function () {
+                this.sync();  //焦点问题，这里不写会出问题.同步KindEditor的值到textarea文本框
+            },
+            afterUpload: function (url) {
+                //上传图片后的代码
+                console.log(url)
+                var image = "<img src='" + url + "'/>";
+                // insertHtmlAtCaret(image);
+            },
+        });
+
+        var isUpdate = window.location.href.indexOf('?id=')//>-1是修改，否则是新增
+        if (isUpdate > -1) {
+            var newInfo = JSON.parse(sessionStorage.getItem("newInfo"))
+            console.log(newInfo)
+            $('#title').val(newInfo.title)
+            editor.html(newInfo.article);
+        }
+        $('#publish').on('click', function () {
+            var content = editor.html()
+            var title = $('#title').val()
+            var data = {
+                title: title,
+                article: content,
+            }
+            for(var key in data){
+                if(!data[key]) {
+                    console.log(key)
+                    layui.use('layer', function() { //独立版的layer无需执行这一句
+                        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+
+                        layer.msg('标题或内容不能为空', {
+                            time: 2000, //20s后自动关闭
+                            btn: ['知道了']
+                        });
+                    })
+                    return;
+                }
+            }
+            console.log(data)
+            if (isUpdate > -1) {
+                data.id = newInfo.id
+                updateSave(data)
+            } else {
+                addSave(data)
+            }
+
+        });
+    });
+    function addSave(data){
+        $.ajax({
+            type: "post",
+            url: "/news/news",
+            dataType: 'json',
+            data:data,
+            success:function(msg){
+                console.log(msg)
+                if(msg.code == 200) {
+                    window.location.href = '/personal/newManage'
+                }else {
+                    layui.use('layer', function() { //独立版的layer无需执行这一句
+                        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                        layer.msg('失败', {
+                            time: 2000, //20s后自动关闭
+                            btn: ['知道了']
+                        });
+                    })
+                }
+                // refreshTable()
+            },
+        })
+
+    }
+    function updateSave(data){
+        $.ajax({
+            type: "post",
+            url: "/news/updateNews",
+            dataType: 'json',
+            data:data,
+            success:function(msg){
+                console.log(msg)
+                if(msg.code == 200) {
+                    window.location.href = '/personal/newManage'
+                }else {
+
+                    layui.use('layer', function() { //独立版的layer无需执行这一句
+                        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                        layer.msg('失败', {
+                            time: 2000, //20s后自动关闭
+                            btn: ['知道了']
+                        });
+                    })
+                }
+                // refreshTable()
+            },
+        })
+
+    }
+</script>
+
+<script src="/publicJS/NavRoom.js"></script>
+
+<script src="/publicJS/personalConentHeight.js"></script>
+
+<script src="/publicJS/NavSelect.js"></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <title>Layui</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <!--/表示static目录-->
+        <link rel="stylesheet" href="/js/layui/css/layui.css"  media="all">
+        <script src="/js/layui/layui.js"></script>
+        <script src="/publicJs/jquery.js"></script>
+        <!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+    </head>
+    <body>
+        <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+        <!--[if lt IE 9]>
+        <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+        <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <div>
+            <div th:fragment='public_nav'>
+                <ul id="topNav" class="layui-nav" lay-filter="demo">
+                    <li class="layui-nav-item"><a href="/index">首页</a></li>
+                    <li class="layui-nav-item"><a href="/news">新闻栏目</a></li>
+                    <li class="layui-nav-item"><a href="/documentManage">作业管理</a></li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">科室介绍</a>
+                        <dl class="layui-nav-child" id="navRoomBox">
+
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" id="navMyselfItem" lay-unselect="" style="float: right">
+                        <a href="javascript:;"><img id="myPicture" src="" class="layui-nav-img">我</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="/personal/myself">个人中心</a></dd>
+                            <dd><a href="javascript:;" id="logout" onclick="
+            $.ajax({
+                type: 'post',
+                url: '/user/userLoginOut',
+                                data: {},
+                                success: function (res) {
+                                if (res.code == 200) {
+                                layer.close(layer.index);
+                                sessionStorage.setItem('userInfo', null);
+                                window.location.href='/index'
+                                } else {
+                                layer.alert(res.msg, {icon: 5}, function () {
+                                });
+                                }
+                                }
+                                });">退出</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" id="navLoginItem" style="float: right"><a href="/login" id="test">登录</a></li>
+                </ul>
+            </div>
+        </div>
+
+    </body>
+</html>

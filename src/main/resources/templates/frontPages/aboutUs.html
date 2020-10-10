@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>科室介绍</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <!--/表示static目录-->
+    <link rel="stylesheet" href="/css/aboutUs.css"  media="all">
+    <link rel="stylesheet" href="/css/topNav.css"  media="all">
+  <link rel="stylesheet" href="/js/layui/css/layui.css"  media="all">
+	<script src="/js/layui/layui.js" charset="utf-8"></script>
+    <script src="/publicJs/jquery.js"></script>
+	<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+    <style>
+
+        .layui-carousel img {
+            object-fit: contain;
+            /*width: 100%;*/
+            max-width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+<!--[if lt IE 9]>
+<script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+<script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<!--
+
+<head th:fragment='list_static'>   // 代码片段
+<div th:replace="layout/list_static :: list_static"></div>    // 引入代码片段  格式=文件路径 :: 代码片段
+
+
+-->
+
+<div th:replace="layout/public_nav :: public_nav"></div>
+
+ 
+<!--<div>科室介绍</div>-->
+<div class="layui-carousel" id="test1" lay-filter="test1">
+    <div carousel-item="" id="roomImgBox">
+            <!-- tml -->
+    </div>
+</div>
+<div id="roomBox">
+  <!-- tml -->
+</div>
+
+
+<script>
+    var partId = window.location.href.split('partId=')[1]
+    var data  = {}
+    var imgList = []
+
+    $(function () {
+        function refresh(){
+            $.ajax({
+                type: "post",
+                url: "/part/partById",
+                dataType: 'json',
+                data:{"partId":partId},
+                success:function(msg){
+                    console.log(msg)
+                    data = msg.data
+                    var addHtml = '\n' +
+                        '   <div class="roomTitle">' + data.partName + '</div>\n' +
+                        '   <div class="roomDetail">' + data.article + '</div>';
+                    $("#roomBox").append(addHtml);
+                },
+            })
+
+        }
+        function getImgList(){
+            $.ajax({
+                type: "get",
+                url: "/rotation/rotation/" + partId,
+                // dataType: 'JSON',
+                cache: false,                      // 不缓存
+                processData: false,                // jQuery不要去处理发送的数据
+                contentType: false,                // jQuery不要去设置Content-Type请求头
+                // data: formData,
+                success:function(msg){
+                    console.log(msg)
+                    imgList = msg.data
+                    for(var i = 0 ; i < imgList.length ; i++){
+                        var addHtml = '        <div>\n' +
+                            '            <img src="'+ imgList[i].pictureUrl + '" alt="">\n' +
+                            '        </div>';
+                        $("#roomImgBox").append(addHtml);
+                    }
+
+                    layui.use(['carousel', 'form'], function() {
+                        var carousel = layui.carousel
+                        var form = layui.form;
+
+                        //常规轮播
+                        carousel.render({
+                            elem: '#test1'
+                            , arrow: 'always'
+                            ,width: '100%'
+                        });
+                    });
+                },
+            })
+
+        }
+        refresh();//获取科室详情
+        getImgList();//获取科室轮播图
+    })
+
+</script>
+
+<script src="/publicJS/NavRoom.js"></script>
+
+<script src="/publicJS/NavSelect.js"></script>
+</body>
+</html>
